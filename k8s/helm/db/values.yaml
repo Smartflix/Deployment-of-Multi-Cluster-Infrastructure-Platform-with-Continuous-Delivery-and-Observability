@@ -1,0 +1,5 @@
+image:
+  repository: postgres
+  tag: "15"
+storage:
+  size: 10Gi

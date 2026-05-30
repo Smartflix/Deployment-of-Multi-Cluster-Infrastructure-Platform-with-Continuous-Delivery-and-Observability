@@ -1,0 +1,7 @@
+# Minimal observability stack manifest (to be templated/helmified)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-stack-placeholder
+data:
+  note: "Add Prometheus, Grafana, Loki, Tempo manifests or Helm charts here"
