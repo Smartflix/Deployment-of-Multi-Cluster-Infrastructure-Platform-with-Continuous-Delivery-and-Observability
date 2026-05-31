@@ -1,5 +1,10 @@
 image:
-  repository: postgres
-  tag: "15"
+  repository: ghcr.io/smartflix/cloudopshub-db
+  tag: "latest"
+  pullPolicy: IfNotPresent
+postgres:
+  database: cloudopshub
+  user: cloudopshub
+  password: change-me
 storage:
   size: 10Gi

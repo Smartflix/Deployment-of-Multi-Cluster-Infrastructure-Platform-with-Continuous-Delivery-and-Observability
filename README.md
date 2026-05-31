@@ -5,6 +5,8 @@ Automated Multi-Cluster Infrastructure Platform for CloudOpsHub.
 This repository scaffolds Terraform, Ansible, Helm charts, CI, and monitoring for a multi-cluster GitOps platform.
 
 See `docs/` for architecture and runbooks.
+
+Container image folders and replacement steps are documented in `docs/images.md`.
  
 ## Quickstart (end-to-end)
 

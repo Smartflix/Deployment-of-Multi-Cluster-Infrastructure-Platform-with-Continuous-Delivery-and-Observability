@@ -1,7 +1,8 @@
 replicaCount: 1
 image:
-  repository: ghcr.io/your-org/backend
+  repository: ghcr.io/smartflix/cloudopshub-backend
   tag: "latest"
+  pullPolicy: IfNotPresent
 service:
   type: ClusterIP
   port: 8080
