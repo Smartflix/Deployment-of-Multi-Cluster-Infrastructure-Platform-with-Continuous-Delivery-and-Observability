@@ -2,17 +2,14 @@
 set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-cloudopshub}"
-REVISION="${REVISION:-fix-push}"
-TFVARS="${TFVARS:-env.prod.tfvars}"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+TERRAFORM_DIR="${ROOT}/infra/terraform"
 
 if [[ -z "${TF_VAR_db_password:-}" ]]; then
   echo "Set TF_VAR_db_password before running."
-  echo "Example: export TF_VAR_db_password='strong-password'"
+  echo "Example: export TF_VAR_db_password='your-rds-password'"
   exit 1
 fi
-
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-TERRAFORM_DIR="${ROOT}/infra/terraform"
 
 cd "${TERRAFORM_DIR}"
 
@@ -32,8 +29,6 @@ fi
 RDS_DB="$(terraform output -raw rds_database_name)"
 RDS_USER="$(terraform output -raw rds_username)"
 
-cd "${ROOT}"
-
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 kubectl create secret generic cloudopshub-rds-secret \
   --from-literal=DB_HOST="${RDS_HOST}" \
@@ -45,14 +40,4 @@ kubectl create secret generic cloudopshub-rds-secret \
   --dry-run=client \
   -o yaml | kubectl apply -f -
 
-kubectl delete application db -n argocd --ignore-not-found
-kubectl delete deployment db -n "${NAMESPACE}" --ignore-not-found
-kubectl delete service db -n "${NAMESPACE}" --ignore-not-found
-
-kubectl apply -f k8s/apps/backend-app.yaml
-kubectl patch application backend -n argocd --type merge -p "{\"spec\":{\"source\":{\"targetRevision\":\"${REVISION}\"}}}"
-kubectl rollout restart deployment/backend -n "${NAMESPACE}" || true
-kubectl rollout status deployment/backend -n "${NAMESPACE}" --timeout=180s
-
-kubectl get applications -n argocd
-kubectl get pods,svc -n "${NAMESPACE}" -o wide
+kubectl get secret cloudopshub-rds-secret -n "${NAMESPACE}"

@@ -33,8 +33,19 @@ aws eks update-kubeconfig --name "${CLUSTER_NAME}" --region "${REGION}"
 
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
-RDS_HOST="$(terraform output -raw rds_address)"
-RDS_PORT="$(terraform output -raw rds_port)"
+if terraform output -raw rds_address >/tmp/cloudopshub-rds-address 2>/dev/null; then
+  RDS_HOST="$(cat /tmp/cloudopshub-rds-address)"
+else
+  RDS_ENDPOINT="$(terraform output -raw rds_endpoint)"
+  RDS_HOST="${RDS_ENDPOINT%%:*}"
+fi
+
+if terraform output -raw rds_port >/tmp/cloudopshub-rds-port 2>/dev/null; then
+  RDS_PORT="$(cat /tmp/cloudopshub-rds-port)"
+else
+  RDS_PORT="5432"
+fi
+
 RDS_DB="$(terraform output -raw rds_database_name)"
 RDS_USER="$(terraform output -raw rds_username)"
 

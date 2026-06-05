@@ -2,7 +2,7 @@ replicaCount: 2
 image:
   repository: docker.io/fabulousjeff2009/cloudopshub-backend
   tag: "latest"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 service:
   type: ClusterIP
   port: 8080
