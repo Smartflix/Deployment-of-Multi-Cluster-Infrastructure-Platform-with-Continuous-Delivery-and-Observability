@@ -65,6 +65,12 @@ kubectl create secret generic cloudopshub-db-secret \
   -n cloudopshub
 ```
 
+From WSL/Linux, you can use the helper script:
+
+```bash
+DB_PASSWORD='<db-password>' ./scripts/create-db-secret.sh
+```
+
 Apply the application manifests:
 
 ```bash

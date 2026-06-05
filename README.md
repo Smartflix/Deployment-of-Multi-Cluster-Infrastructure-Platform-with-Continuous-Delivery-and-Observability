@@ -77,7 +77,21 @@ aws eks update-kubeconfig --name $(terraform output -raw cluster_name) --region 
 
 ## Install ArgoCD
 
-Install the official ArgoCD manifests on the control cluster:
+Install the official ArgoCD manifests on the control cluster.
+
+For local kind testing:
+
+```powershell
+.\scripts\install-argocd-local.ps1 -Revision fix-push
+```
+
+This installs ArgoCD, creates the `cloudopshub` namespace, creates the demo DB Secret, applies the ArgoCD Applications, and opens the ArgoCD UI at:
+
+```text
+http://localhost:18080
+```
+
+For production or a Linux/macOS shell:
 
 ```bash
 kubectl create namespace argocd
@@ -145,6 +159,12 @@ backend:  http://localhost:18091/api/summary
 ```
 
 For GitOps deployment, ArgoCD syncs the Helm charts from `k8s/apps`.
+
+Before syncing the db chart, make sure the DB Secret exists:
+
+```bash
+DB_PASSWORD='<db-password>' ./scripts/create-db-secret.sh
+```
 
 ```bash
 kubectl apply -f k8s/apps/db-app.yaml
