@@ -110,6 +110,8 @@ helm repo update eks
 helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
   -n "${NAMESPACE}" \
   --set clusterName="${CLUSTER_NAME}" \
+  --set region="${AWS_REGION}" \
+  --set vpcId="${VPC_ID}" \
   --set serviceAccount.create=false \
   --set serviceAccount.name="${SERVICE_ACCOUNT}" \
   --version "${CONTROLLER_VERSION}"
