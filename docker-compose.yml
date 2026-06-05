@@ -1,0 +1,43 @@
+services:
+  frontend:
+    build:
+      context: ./apps/frontend
+    image: docker.io/fabulousjeff2009/cloudopshub-frontend:local
+    ports:
+      - "18090:80"
+    depends_on:
+      backend:
+        condition: service_started
+
+  backend:
+    build:
+      context: ./apps/backend
+    image: docker.io/fabulousjeff2009/cloudopshub-backend:local
+    environment:
+      PORT: "8080"
+    ports:
+      - "18091:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    build:
+      context: ./apps/db
+    image: docker.io/fabulousjeff2009/cloudopshub-db:local
+    environment:
+      POSTGRES_DB: cloudopshub
+      POSTGRES_USER: cloudopshub
+      POSTGRES_PASSWORD: change-me
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cloudopshub -d cloudopshub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - cloudopshub-db-data:/var/lib/postgresql/data
+
+volumes:
+  cloudopshub-db-data:

@@ -8,6 +8,37 @@ See `docs/` for architecture and runbooks.
 
 Container image folders and replacement steps are documented in `docs/images.md`.
 
+## Run The Application Locally
+
+Start with the application before CI/CD:
+
+```powershell
+docker compose up --build
+```
+
+Open the dashboard:
+
+```text
+http://localhost:18090
+```
+
+Backend API:
+
+```text
+http://localhost:18091/api/summary
+http://localhost:18091/api/clusters
+http://localhost:18091/api/pipelines
+http://localhost:18091/api/incidents
+```
+
+Postgres is exposed locally on port `15432` with:
+
+```text
+database: cloudopshub
+user: cloudopshub
+password: change-me
+```
+
 ## Quickstart
 
 Prerequisites:
@@ -17,7 +48,7 @@ Prerequisites:
 - `kubectl`
 - `helm`
 - `kubectl` configured for the target cluster after provisioning
-- GitHub repository with GitHub Actions and package publishing enabled for GHCR
+- GitHub repository with GitHub Actions and Docker Hub secrets configured
 
 ## Provision Infrastructure
 
@@ -57,17 +88,17 @@ Register remote clusters when using a central control-plane model. See `docs/dep
 
 ## Configure Image Pulling
 
-Create a GHCR pull secret in each target namespace that pulls CloudOpsHub images:
+If your Docker Hub repositories are private, create a Docker Hub pull secret in each target namespace:
 
 ```bash
-kubectl create secret docker-registry ghcr-pull-secret \
-  --docker-server=ghcr.io \
-  --docker-username=<github-username> \
-  --docker-password=<github-token> \
+kubectl create secret docker-registry dockerhub-pull-secret \
+  --docker-server=docker.io \
+  --docker-username=fabulousjeff2009 \
+  --docker-password=<dockerhub-token> \
   --docker-email=<email>
 
 kubectl patch serviceaccount default \
-  -p '{"imagePullSecrets":[{"name":"ghcr-pull-secret"}]}'
+  -p '{"imagePullSecrets":[{"name":"dockerhub-pull-secret"}]}'
 ```
 
 ## Deploy Applications

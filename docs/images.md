@@ -13,12 +13,12 @@ This project now has one build folder per deployable image:
 The Helm charts currently deploy these images:
 
 ```text
-ghcr.io/smartflix/cloudopshub-frontend:latest
-ghcr.io/smartflix/cloudopshub-backend:latest
-ghcr.io/smartflix/cloudopshub-db:latest
+docker.io/fabulousjeff2009/cloudopshub-frontend:latest
+docker.io/fabulousjeff2009/cloudopshub-backend:latest
+docker.io/fabulousjeff2009/cloudopshub-db:latest
 ```
 
-The GitHub Actions workflow builds and pushes the same three images to GHCR on pushes to `main` or `staging`.
+The GitHub Actions workflow builds and pushes the same three images to Docker Hub on pushes to `main` or `staging`.
 
 ## Replace The Images
 
@@ -33,39 +33,67 @@ The GitHub Actions workflow builds and pushes the same three images to GHCR on p
 
 ## Build Locally
 
-```bash
-docker build -t ghcr.io/smartflix/cloudopshub-frontend:latest apps/frontend
-docker build -t ghcr.io/smartflix/cloudopshub-backend:latest apps/backend
-docker build -t ghcr.io/smartflix/cloudopshub-db:latest apps/db
+For the application-first local workflow, use Docker Compose:
+
+```powershell
+docker compose up --build
 ```
 
-## Push Locally To GHCR
+Then open `http://localhost:18090`.
+
+To build individual images manually:
 
 ```bash
-echo <GITHUB_TOKEN> | docker login ghcr.io -u <GITHUB_USERNAME> --password-stdin
-docker push ghcr.io/smartflix/cloudopshub-frontend:latest
-docker push ghcr.io/smartflix/cloudopshub-backend:latest
-docker push ghcr.io/smartflix/cloudopshub-db:latest
+docker build -t docker.io/fabulousjeff2009/cloudopshub-frontend:latest apps/frontend
+docker build -t docker.io/fabulousjeff2009/cloudopshub-backend:latest apps/backend
+docker build -t docker.io/fabulousjeff2009/cloudopshub-db:latest apps/db
 ```
 
-## Use Docker Hub Instead
+## Push Locally To Docker Hub
 
-Docker Hub is not required because GHCR is already configured. If you prefer Docker Hub:
+```bash
+docker login
+docker push docker.io/fabulousjeff2009/cloudopshub-frontend:latest
+docker push docker.io/fabulousjeff2009/cloudopshub-backend:latest
+docker push docker.io/fabulousjeff2009/cloudopshub-db:latest
+```
 
-1. Create Docker Hub repositories:
-   - `<dockerhub-user>/cloudopshub-frontend`
-   - `<dockerhub-user>/cloudopshub-backend`
-   - `<dockerhub-user>/cloudopshub-db`
-2. Change the three Helm values files from `ghcr.io/smartflix/...` to `docker.io/<dockerhub-user>/...`.
-3. Change `.github/workflows/ci.yml`:
-   - `REGISTRY: docker.io`
-   - `IMAGE_NAMESPACE: <dockerhub-user>`
-   - login username: `${{ secrets.DOCKERHUB_USERNAME }}`
-   - login password: `${{ secrets.DOCKERHUB_TOKEN }}`
-4. Add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` in GitHub repository secrets.
+## Docker Hub CI
+
+The CI workflow is configured for Docker Hub:
+
+1. Create these Docker Hub repositories under `fabulousjeff2009` if they do not exist:
+   - `cloudopshub-frontend`
+   - `cloudopshub-backend`
+   - `cloudopshub-db`
+2. Add these GitHub repository secrets:
+   - `DOCKERHUB_USERNAME`
+   - `DOCKERHUB_TOKEN`
+3. Push to `main` or `staging`.
+
+## Build And Push To Docker Hub Locally
+
+From a normal PowerShell terminal running as your Windows user:
+
+```powershell
+cd C:\Users\Owner\CloudOpsHub\Deployment-of-Multi-Cluster-Infrastructure-Platform-with-Continuous-Delivery-and-Observability
+.\scripts\dockerhub-build-push.ps1 -DockerHubUser fabulousjeff2009
+```
+
+Use a specific tag when you do not want to push `latest`:
+
+```powershell
+.\scripts\dockerhub-build-push.ps1 -DockerHubUser fabulousjeff2009 -Tag v1
+```
+
+If you already ran `docker login`, skip the login prompt:
+
+```powershell
+.\scripts\dockerhub-build-push.ps1 -DockerHubUser fabulousjeff2009 -SkipLogin
+```
 
 ## Important Production Notes
 
 - Do not leave `k8s/helm/db/values.yaml` with `postgres.password: change-me` in production.
 - Prefer immutable tags such as a Git SHA for production releases instead of `latest`.
-- If GHCR packages are private, configure Kubernetes image pull secrets before ArgoCD syncs the apps.
+- If Docker Hub repositories are private, configure Kubernetes image pull secrets before ArgoCD syncs the apps.
