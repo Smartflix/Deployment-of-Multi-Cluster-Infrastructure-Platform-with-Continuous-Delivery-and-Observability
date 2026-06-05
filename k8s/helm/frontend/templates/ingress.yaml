@@ -9,6 +9,15 @@ metadata:
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
+    {{- if .Values.ingress.tls.enabled }}
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.tls.certificateArn | quote }}
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    {{- if .Values.ingress.tls.sslRedirect }}
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    {{- end }}
+    {{- else }}
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className | quote }}
   rules:

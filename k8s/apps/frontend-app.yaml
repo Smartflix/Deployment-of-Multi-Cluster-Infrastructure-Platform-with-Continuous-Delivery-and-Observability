@@ -17,6 +17,12 @@ spec:
           value: 759e34ddb88b085b65db1c0d06d571b34198435f
         - name: ingress.enabled
           value: "true"
+        - name: ingress.tls.enabled
+          value: "true"
+        - name: ingress.tls.certificateArn
+          value: arn:aws:acm:us-east-1:867041163440:certificate/dbf536a5-99ec-4ef2-89df-a70124e318c3
+        - name: ingress.tls.sslRedirect
+          value: "true"
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: cloudopshub

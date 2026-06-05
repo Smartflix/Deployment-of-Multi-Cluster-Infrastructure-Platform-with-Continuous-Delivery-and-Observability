@@ -79,3 +79,70 @@ kubectl apply -f k8s/apps/frontend-app.yaml
 ```
 
 For production, use RDS and do not sync `k8s/apps/db-app.yaml`. The db chart is retained for local/demo testing.
+
+## HTTPS For The Frontend ALB
+
+The frontend Ingress supports HTTPS through AWS Load Balancer Controller annotations.
+
+Requirements:
+
+- A domain name you control, such as `app.example.com`.
+- An ACM certificate in the same AWS region as the ALB, currently `us-east-1`.
+- DNS validation completed for the ACM certificate.
+
+Request a certificate:
+
+```bash
+export AWS_REGION=us-east-1
+export FRONTEND_HOST=app.example.com
+
+aws acm request-certificate \
+  --region "$AWS_REGION" \
+  --domain-name "$FRONTEND_HOST" \
+  --validation-method DNS \
+  --query CertificateArn \
+  --output text
+```
+
+If the domain is hosted in Route 53, use the helper script to request the certificate and create the DNS validation record:
+
+```bash
+export AWS_REGION=us-east-1
+export ROOT_DOMAIN=devopslegend.click
+export FRONTEND_HOST=app.devopslegend.click
+chmod +x scripts/request-acm-cert-route53.sh
+./scripts/request-acm-cert-route53.sh
+```
+
+Create the DNS validation record shown by:
+
+```bash
+aws acm describe-certificate \
+  --region "$AWS_REGION" \
+  --certificate-arn "$CERTIFICATE_ARN" \
+  --query "Certificate.DomainValidationOptions[0].ResourceRecord"
+```
+
+After the certificate status is `ISSUED`, enable HTTPS:
+
+```bash
+export CERTIFICATE_ARN=<acm-certificate-arn>
+export FRONTEND_HOST=app.example.com
+chmod +x scripts/enable-alb-https.sh
+./scripts/enable-alb-https.sh
+```
+
+Verify:
+
+```bash
+kubectl get ingress frontend -n cloudopshub
+curl -I "https://${FRONTEND_HOST}"
+```
+
+The chart uses:
+
+```text
+alb.ingress.kubernetes.io/certificate-arn
+alb.ingress.kubernetes.io/listen-ports: [{"HTTP":80},{"HTTPS":443}]
+alb.ingress.kubernetes.io/ssl-redirect: 443
+```
