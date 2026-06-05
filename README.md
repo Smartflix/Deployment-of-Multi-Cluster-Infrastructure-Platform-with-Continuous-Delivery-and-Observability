@@ -241,6 +241,6 @@ kubectl get ingress -n cloudopshub -w
 ## Operations
 
 - Secrets: install SealedSecrets or External Secrets before production use.
-- Monitoring: install Prometheus, Grafana, Loki, and Tempo as documented in `docs/monitoring.md`.
+- Monitoring: install Prometheus and Grafana with `scripts/install-monitoring.sh`; see `docs/monitoring.md`.
 - Backups: install Velero and configure database backups as documented in `docs/backups.md`.
 - Runbooks: see `docs/runbooks.md`.

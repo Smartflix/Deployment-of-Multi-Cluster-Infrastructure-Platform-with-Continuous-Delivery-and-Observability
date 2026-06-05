@@ -1,11 +1,16 @@
 replicaCount: 2
 image:
   repository: docker.io/fabulousjeff2009/cloudopshub-backend
-  tag: "rds-v1"
+  tag: "rds-v2"
   pullPolicy: Always
 service:
   type: ClusterIP
   port: 8080
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  path: /metrics
 database:
   enabled: false
   existingSecret: cloudopshub-rds-secret

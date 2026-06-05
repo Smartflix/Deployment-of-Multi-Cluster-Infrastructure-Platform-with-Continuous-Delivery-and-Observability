@@ -1,0 +1,34 @@
+fullnameOverride: cloudopshub-monitoring
+
+grafana:
+  enabled: true
+  defaultDashboardsEnabled: true
+  service:
+    type: ClusterIP
+  sidecar:
+    dashboards:
+      enabled: true
+    datasources:
+      enabled: true
+
+prometheus:
+  service:
+    type: ClusterIP
+  prometheusSpec:
+    retention: 15d
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorNamespaceSelector: {}
+    podMonitorNamespaceSelector: {}
+
+alertmanager:
+  enabled: true
+  service:
+    type: ClusterIP
+
+kube-state-metrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true

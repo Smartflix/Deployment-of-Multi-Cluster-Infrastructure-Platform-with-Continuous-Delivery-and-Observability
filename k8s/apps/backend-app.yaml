@@ -14,8 +14,10 @@ spec:
     helm:
       parameters:
         - name: image.tag
-          value: rds-v1
+          value: rds-v2
         - name: database.enabled
+          value: "true"
+        - name: serviceMonitor.enabled
           value: "true"
   destination:
     server: 'https://kubernetes.default.svc'

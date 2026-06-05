@@ -6,6 +6,9 @@ import os
 import socket
 
 
+REQUEST_COUNTS = {}
+
+
 CLUSTERS = [
     {
         "name": "cloudopshub-prod",
@@ -152,6 +155,12 @@ ROUTES = {
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
+        REQUEST_COUNTS[path] = REQUEST_COUNTS.get(path, 0) + 1
+
+        if path == "/metrics":
+            self.send_metrics()
+            return
+
         handler = ROUTES.get(path)
 
         if handler is None:
@@ -170,6 +179,31 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_common_headers()
         self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def send_metrics(self):
+        database = database_summary()
+        lines = [
+            "# HELP cloudopshub_backend_info CloudOpsHub backend service info",
+            "# TYPE cloudopshub_backend_info gauge",
+            'cloudopshub_backend_info{service="cloudopshub-backend"} 1',
+            "# HELP cloudopshub_database_reachable RDS/database reachability status",
+            "# TYPE cloudopshub_database_reachable gauge",
+            f'cloudopshub_database_reachable{{type="{database["type"]}"}} {1 if database["status"] == "reachable" else 0}',
+            "# HELP cloudopshub_http_requests_total Backend HTTP requests by path",
+            "# TYPE cloudopshub_http_requests_total counter",
+        ]
+
+        for route, count in sorted(REQUEST_COUNTS.items()):
+            safe_route = route.replace("\\", "\\\\").replace('"', '\\"')
+            lines.append(f'cloudopshub_http_requests_total{{path="{safe_route}"}} {count}')
+
+        body = ("\n".join(lines) + "\n").encode("utf-8")
+        self.send_response(200)
+        self.send_common_headers()
+        self.send_header("Content-Type", "text/plain; version=0.0.4")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
