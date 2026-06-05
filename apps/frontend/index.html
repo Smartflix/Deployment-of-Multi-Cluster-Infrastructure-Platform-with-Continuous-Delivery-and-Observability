@@ -140,6 +140,11 @@
         margin-top: 16px;
       }
 
+      .connection {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-bottom: 16px;
+      }
+
       .panel,
       .metric {
         border: 1px solid var(--line);
@@ -212,6 +217,53 @@
         color: var(--amber);
       }
 
+      .status.fail {
+        background: #fef3f2;
+        color: var(--red);
+      }
+
+      .link-card {
+        position: relative;
+        min-height: 150px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .link-card h2 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .link-card p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .link-card strong {
+        display: block;
+        margin-top: 12px;
+        overflow-wrap: anywhere;
+        font-size: 14px;
+      }
+
+      .link-card::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: -17px;
+        width: 32px;
+        height: 2px;
+        background: var(--blue);
+      }
+
+      .link-card:last-child::after {
+        display: none;
+      }
+
       .side-list {
         display: grid;
         gap: 12px;
@@ -282,6 +334,7 @@
         }
 
         .stats,
+        .connection,
         .content {
           grid-template-columns: 1fr;
         }
@@ -316,6 +369,27 @@
           <div class="env-pill"><span class="dot"></span><span id="last-updated">Live platform view</span></div>
         </header>
 
+        <section class="grid connection" aria-label="Application connection">
+          <article class="link-card">
+            <h2>Frontend</h2>
+            <p>Nginx serves this dashboard and proxies browser API calls through the same public endpoint.</p>
+            <strong id="frontend-link">/api</strong>
+            <span class="status" id="frontend-status">serving</span>
+          </article>
+          <article class="link-card">
+            <h2>Backend API</h2>
+            <p>The frontend is calling the Python backend for cluster, pipeline, incident, and database data.</p>
+            <strong id="backend-link">checking...</strong>
+            <span class="status watch" id="backend-status">checking</span>
+          </article>
+          <article class="link-card">
+            <h2>Database</h2>
+            <p>The backend checks the configured database endpoint and reports reachability live.</p>
+            <strong id="database-link">checking...</strong>
+            <span class="status watch" id="database-status">checking</span>
+          </article>
+        </section>
+
         <section class="grid stats" id="overview" aria-label="Platform metrics">
           <div class="metric"><span>Clusters</span><strong id="clusters-count">3</strong></div>
           <div class="metric"><span>Healthy clusters</span><strong id="healthy-count">3</strong></div>
@@ -339,7 +413,7 @@
               <tbody id="cluster-rows"></tbody>
             </table>
             <div class="toolbar">
-              <input id="api-url" value="http://localhost:18091" aria-label="Backend API URL">
+              <input id="api-url" value="/api" aria-label="Backend API base path">
               <button id="refresh">Refresh</button>
               <span class="api-state" id="api-state">Using local dashboard data</span>
             </div>
@@ -388,6 +462,24 @@
       const incidentList = document.querySelector("#incident-list");
       const state = document.querySelector("#api-state");
       const apiUrl = document.querySelector("#api-url");
+      const backendLink = document.querySelector("#backend-link");
+      const backendStatus = document.querySelector("#backend-status");
+      const databaseLink = document.querySelector("#database-link");
+      const databaseStatus = document.querySelector("#database-status");
+
+      function apiPath(path) {
+        const base = apiUrl.value.trim().replace(/\/$/, "");
+        if (!base || base === "/api") {
+          return `/api${path}`;
+        }
+        return `${base}${path}`;
+      }
+
+      function setStatus(element, value, ok) {
+        element.textContent = value;
+        element.classList.toggle("watch", !ok);
+        element.classList.toggle("fail", value === "unreachable" || value === "not_configured");
+      }
 
       function render(data, source) {
         document.querySelector("#clusters-count").textContent = data.summary.clusters;
@@ -421,14 +513,22 @@
         `).join("");
       }
 
+      function renderConnection(summary, database) {
+        backendLink.textContent = summary.service || "cloudopshub-backend";
+        setStatus(backendStatus, summary.status || "ok", summary.status === "ok");
+
+        databaseLink.textContent = `${database.type} · ${database.host}:${database.port}`;
+        setStatus(databaseStatus, database.status, database.status === "reachable");
+      }
+
       async function loadFromApi() {
-        const base = apiUrl.value.replace(/\/$/, "");
         try {
-          const [summary, clusters, pipelines, incidents] = await Promise.all([
-            fetch(`${base}/api/summary`).then(response => response.json()),
-            fetch(`${base}/api/clusters`).then(response => response.json()),
-            fetch(`${base}/api/pipelines`).then(response => response.json()),
-            fetch(`${base}/api/incidents`).then(response => response.json())
+          const [summary, clusters, pipelines, incidents, database] = await Promise.all([
+            fetch(apiPath("/summary")).then(response => response.json()),
+            fetch(apiPath("/clusters")).then(response => response.json()),
+            fetch(apiPath("/pipelines")).then(response => response.json()),
+            fetch(apiPath("/incidents")).then(response => response.json()),
+            fetch(apiPath("/database")).then(response => response.json())
           ]);
 
           render({
@@ -436,9 +536,14 @@
             clusters: clusters.clusters,
             pipelines: pipelines.pipelines,
             incidents: incidents.incidents
-          }, `Connected to ${base}`);
+          }, `Connected through ${apiUrl.value}`);
+          renderConnection(summary, database.database);
         } catch (error) {
           render(fallback, "Using local dashboard data");
+          backendLink.textContent = "backend unavailable";
+          setStatus(backendStatus, "unreachable", false);
+          databaseLink.textContent = "waiting for backend";
+          setStatus(databaseStatus, "unreachable", false);
         }
       }
 
