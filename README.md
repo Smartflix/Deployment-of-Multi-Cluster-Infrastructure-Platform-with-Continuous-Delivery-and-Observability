@@ -103,7 +103,36 @@ kubectl patch serviceaccount default \
 
 ## Deploy Applications
 
-Push application images via CI or build and push them locally. ArgoCD syncs the Helm charts from `k8s/apps`.
+Push application images via CI or build and push them locally.
+
+For a local Kubernetes smoke test before ArgoCD, use a kind cluster. If Docker Desktop asks for a Kubernetes provisioner, choose `kind`.
+
+Install kind if needed:
+
+```powershell
+choco install kind -y
+```
+
+Create a local multi-node kind cluster with two worker nodes labeled as separate zones:
+
+```powershell
+.\scripts\create-kind-cluster.ps1
+```
+
+Deploy with Helm:
+
+```powershell
+.\scripts\deploy-k8s-local.ps1
+```
+
+This installs the application into the `cloudopshub` namespace and port-forwards:
+
+```text
+frontend: http://localhost:18090
+backend:  http://localhost:18091/api/summary
+```
+
+For GitOps deployment, ArgoCD syncs the Helm charts from `k8s/apps`.
 
 ```bash
 kubectl apply -f k8s/apps/db-app.yaml
