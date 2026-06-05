@@ -13,6 +13,8 @@ spec:
     path: k8s/helm/backend
     helm:
       parameters:
+        - name: image.tag
+          value: rds-v1
         - name: database.enabled
           value: "true"
   destination:
