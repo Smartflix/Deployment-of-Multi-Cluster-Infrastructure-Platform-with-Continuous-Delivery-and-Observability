@@ -49,10 +49,47 @@ cloudopshub_http_requests_total
 ```bash
 kubectl get pods,svc -n monitoring
 kubectl get servicemonitor -A | grep backend
+kubectl get prometheusrule -n monitoring | grep cloudopshub
 kubectl port-forward svc/backend 38091:8080 -n cloudopshub
 curl http://localhost:38091/metrics
 ```
 
 Grafana includes the `CloudOpsHub Application` dashboard from `monitoring/cloudopshub-dashboard.yaml`.
 
-For logs and tracing, install Loki and Tempo from Grafana Helm charts after metrics are stable.
+## Alerts
+
+CloudOpsHub alert rules are installed from `monitoring/cloudopshub-alerts.yaml`:
+
+- `CloudOpsHubBackendDown`
+- `CloudOpsHubRDSUnreachable`
+- `CloudOpsHubPodCrashLooping`
+- `CloudOpsHubDeploymentReplicasUnavailable`
+
+Check alert rules:
+
+```bash
+kubectl get prometheusrule cloudopshub-alerts -n monitoring -o yaml
+```
+
+## Logs With Loki
+
+Install Loki and Grafana Alloy for Kubernetes pod logs:
+
+```bash
+chmod +x scripts/install-loki.sh
+./scripts/install-loki.sh
+```
+
+Grafana is configured with a Loki datasource from `monitoring/kube-prometheus-values.yaml`:
+
+```text
+URL: http://loki-gateway.monitoring.svc.cluster.local
+```
+
+Query CloudOpsHub logs:
+
+```logql
+{namespace="cloudopshub"}
+```
+
+For tracing, install Tempo after metrics and logs are stable.

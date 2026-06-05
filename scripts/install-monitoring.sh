@@ -23,6 +23,7 @@ helm upgrade --install cloudopshub-monitoring prometheus-community/kube-promethe
   --set grafana.adminPassword="${GRAFANA_ADMIN_PASSWORD}"
 
 kubectl apply -f "${ROOT}/monitoring/cloudopshub-dashboard.yaml"
+kubectl apply -f "${ROOT}/monitoring/cloudopshub-alerts.yaml"
 
 kubectl rollout status deployment/cloudopshub-monitoring-grafana -n "${NAMESPACE}" --timeout=180s
 kubectl get pods,svc -n "${NAMESPACE}"

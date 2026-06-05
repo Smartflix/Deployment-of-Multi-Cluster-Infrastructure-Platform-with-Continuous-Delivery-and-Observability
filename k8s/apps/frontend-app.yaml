@@ -9,10 +9,12 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/Smartflix/Deployment-of-Multi-Cluster-Infrastructure-Platform-with-Continuous-Delivery-and-Observability.git'
-    targetRevision: HEAD
+    targetRevision: fix-push
     path: k8s/helm/frontend
     helm:
       parameters:
+        - name: image.tag
+          value: linked-v1
         - name: ingress.enabled
           value: "true"
   destination:

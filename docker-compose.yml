@@ -15,6 +15,11 @@ services:
     image: docker.io/fabulousjeff2009/cloudopshub-backend:local
     environment:
       PORT: "8080"
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: cloudopshub
+      DB_USER: cloudopshub
+      DB_PASSWORD: change-me
     ports:
       - "18091:8080"
     depends_on:

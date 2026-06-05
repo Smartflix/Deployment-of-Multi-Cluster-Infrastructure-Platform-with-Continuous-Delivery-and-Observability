@@ -150,6 +150,23 @@ kubectl patch serviceaccount default \
 
 Push application images via CI or build and push them locally.
 
+## GitHub Actions Image Pipeline
+
+The CI workflow builds the frontend, backend, and demo db images, pushes them to Docker Hub, then updates the frontend/backend ArgoCD image tags to the Git SHA.
+
+Add these GitHub repository secrets:
+
+```text
+DOCKERHUB_USERNAME
+DOCKERHUB_TOKEN
+```
+
+Enable workflow write access:
+
+```text
+Repository Settings -> Actions -> General -> Workflow permissions -> Read and write permissions
+```
+
 For a local Kubernetes smoke test before ArgoCD, use a kind cluster. If Docker Desktop asks for a Kubernetes provisioner, choose `kind`.
 
 Install kind if needed:
@@ -242,5 +259,6 @@ kubectl get ingress -n cloudopshub -w
 
 - Secrets: install SealedSecrets or External Secrets before production use.
 - Monitoring: install Prometheus and Grafana with `scripts/install-monitoring.sh`; see `docs/monitoring.md`.
-- Backups: install Velero and configure database backups as documented in `docs/backups.md`.
+- Logs: install Loki and Alloy with `scripts/install-loki.sh`; see `docs/monitoring.md`.
+- Backups: validate RDS snapshots and Velero restores as documented in `docs/backups.md`.
 - Runbooks: see `docs/runbooks.md`.

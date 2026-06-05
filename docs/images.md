@@ -18,7 +18,9 @@ docker.io/fabulousjeff2009/cloudopshub-backend:latest
 docker.io/fabulousjeff2009/cloudopshub-db:latest
 ```
 
-The GitHub Actions workflow builds and pushes the same three images to Docker Hub on pushes to `main` or `staging`.
+The GitHub Actions workflow builds and pushes the same three images to Docker Hub on pushes to `main`, `staging`, or `fix-push`.
+
+For production GitOps, the workflow also updates the frontend and backend ArgoCD Application image tags to the Git SHA. ArgoCD then sees a Git change and syncs the new images into the cluster.
 
 ## Replace The Images
 
@@ -27,9 +29,10 @@ The GitHub Actions workflow builds and pushes the same three images to Docker Hu
 3. Put your real backend source in `apps/backend`.
 4. Update `apps/backend/Dockerfile` for your backend runtime.
 5. Keep `apps/db/Dockerfile` only if you need a custom Postgres image with init scripts. If you do not need that, set the DB Helm image back to `postgres:15`.
-6. Commit and push to `main` or `staging`.
-7. Confirm the workflow publishes the three images.
-8. ArgoCD will sync the Helm charts from `k8s/apps`.
+6. Commit and push to `main`, `staging`, or `fix-push`.
+7. Confirm the workflow publishes the images.
+8. Confirm the workflow commits updated image tags in `k8s/apps/backend-app.yaml` and `k8s/apps/frontend-app.yaml`.
+9. ArgoCD syncs the Helm charts from `k8s/apps`.
 
 ## Build Locally
 
@@ -69,7 +72,13 @@ The CI workflow is configured for Docker Hub:
 2. Add these GitHub repository secrets:
    - `DOCKERHUB_USERNAME`
    - `DOCKERHUB_TOKEN`
-3. Push to `main` or `staging`.
+3. Push to `main`, `staging`, or `fix-push`.
+
+The workflow needs `contents: write` permission so it can commit updated ArgoCD image tags. In GitHub, check:
+
+```text
+Repository Settings -> Actions -> General -> Workflow permissions -> Read and write permissions
+```
 
 ## Build And Push To Docker Hub Locally
 
@@ -95,5 +104,5 @@ If you already ran `docker login`, skip the login prompt:
 ## Important Production Notes
 
 - The db chart reads `POSTGRES_PASSWORD` from the Kubernetes Secret named `cloudopshub-db-secret`.
-- Prefer immutable tags such as a Git SHA for production releases instead of `latest`.
+- Production frontend/backend deploys use immutable Git SHA image tags through GitHub Actions.
 - If Docker Hub repositories are private, configure Kubernetes image pull secrets before ArgoCD syncs the apps.

@@ -5,3 +5,5 @@ crash.log
 crash.*.log
 __pycache__/
 *.py[cod]
+credentials-velero
+velero-policy.json

@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cloudopshub-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: cloudopshub-alerts
+spec:
+  groups:
+    - name: cloudopshub.application
+      rules:
+        - alert: CloudOpsHubBackendDown
+          expr: up{namespace="cloudopshub", service="backend"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: CloudOpsHub backend target is down
+            description: Prometheus cannot scrape the backend service for more than 2 minutes.
+
+        - alert: CloudOpsHubRDSUnreachable
+          expr: cloudopshub_database_reachable == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: CloudOpsHub backend cannot reach RDS
+            description: The backend reports that the RDS PostgreSQL endpoint is unreachable.
+
+        - alert: CloudOpsHubPodCrashLooping
+          expr: kube_pod_container_status_waiting_reason{namespace="cloudopshub", reason="CrashLoopBackOff"} > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: CloudOpsHub pod is crash looping
+            description: Pod {{ $labels.pod }} container {{ $labels.container }} is in CrashLoopBackOff.
+
+        - alert: CloudOpsHubDeploymentReplicasUnavailable
+          expr: kube_deployment_status_replicas_unavailable{namespace="cloudopshub"} > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: CloudOpsHub deployment has unavailable replicas
+            description: Deployment {{ $labels.deployment }} has unavailable replicas.

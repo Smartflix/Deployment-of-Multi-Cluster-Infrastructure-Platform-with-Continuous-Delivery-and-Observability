@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/Smartflix/Deployment-of-Multi-Cluster-Infrastructure-Platform-with-Continuous-Delivery-and-Observability.git'
-    targetRevision: HEAD
+    targetRevision: fix-push
     path: k8s/helm/backend
     helm:
       parameters:
