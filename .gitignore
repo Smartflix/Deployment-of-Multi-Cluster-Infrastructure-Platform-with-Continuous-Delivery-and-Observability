@@ -3,9 +3,5 @@
 *.tfstate.*
 crash.log
 crash.*.log
-.terraform.lock.hcl
-**/.terraform/*
-*.tfstate
-*.tfstate.*
-crash.log
-crash.*.log
+__pycache__/
+*.py[cod]

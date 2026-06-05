@@ -13,6 +13,16 @@ variable "node_group_desired_count" {
   default = 2
 }
 
+variable "node_group_min_count" {
+  type    = number
+  default = 1
+}
+
+variable "node_group_max_count" {
+  type    = number
+  default = 3
+}
+
 variable "node_group_instance_type" {
   type    = string
   default = "t3.medium"

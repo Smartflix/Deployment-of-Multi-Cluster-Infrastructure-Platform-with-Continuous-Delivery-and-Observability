@@ -2,26 +2,26 @@
 
 Automated Multi-Cluster Infrastructure Platform for CloudOpsHub.
 
-This repository scaffolds Terraform, Ansible, Helm charts, CI, and monitoring for a multi-cluster GitOps platform.
+This repository scaffolds Terraform, Ansible, Helm charts, CI, and monitoring for a multi-cluster GitOps platform that supports dev, staging, and prod delivery across Kubernetes clusters.
 
 See `docs/` for architecture and runbooks.
 
 Container image folders and replacement steps are documented in `docs/images.md`.
- 
-## Quickstart (end-to-end)
+
+## Quickstart
 
 Prerequisites:
+
 - `terraform` >= 1.0
 - `aws` CLI configured with credentials
 - `kubectl`
 - `helm`
-- `kind` (optional local dev cluster)
-- `kubectl` configured for the target cluster
-- GitHub repository with GitHub Actions and a Personal Access Token with `write:packages` (for GHCR) saved as `CR_PAT` in repository secrets
+- `kubectl` configured for the target cluster after provisioning
+- GitHub repository with GitHub Actions and package publishing enabled for GHCR
 
-High-level steps:
+## Provision Infrastructure
 
-1) Provision infrastructure (dev example):
+Bootstrap the Terraform backend and provision an environment:
 
 ```bash
 cd infra/terraform
@@ -31,36 +31,66 @@ terraform init
 terraform apply -var-file=env.dev.tfvars
 ```
 
-After apply you'll get outputs for the EKS cluster endpoint and CA — configure `kubectl`:
+Use another variable file for staging or production:
+
+```bash
+terraform apply -var-file=env.staging.tfvars
+terraform apply -var-file=env.prod.tfvars
+```
+
+Configure `kubectl` for the cluster:
 
 ```bash
 aws eks update-kubeconfig --name $(terraform output -raw cluster_name) --region us-east-1
 ```
 
-2) Install ArgoCD on the control cluster (single control-plane):
+## Install ArgoCD
+
+Install the official ArgoCD manifests on the control cluster:
 
 ```bash
-kubectl create namespace argocd || true
-kubectl apply -n argocd -f k8s/argocd/install-argocd.yaml
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-3) Register remote clusters (example docs are in `docs/deployment.md`).
+Register remote clusters when using a central control-plane model. See `docs/deployment.md`.
 
-4) Install SealedSecrets (for GitOps secrets):
+## Configure Image Pulling
+
+Create a GHCR pull secret in each target namespace that pulls CloudOpsHub images:
 
 ```bash
-kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.21.4/controller.yaml
+kubectl create secret docker-registry ghcr-pull-secret \
+  --docker-server=ghcr.io \
+  --docker-username=<github-username> \
+  --docker-password=<github-token> \
+  --docker-email=<email>
+
+kubectl patch serviceaccount default \
+  -p '{"imagePullSecrets":[{"name":"ghcr-pull-secret"}]}'
 ```
 
-5) Push application images via CI (GitHub Actions will build, scan and push to GHCR). Ensure `CR_PAT` secret is set.
+## Deploy Applications
 
-6) Create ArgoCD Application manifests in `k8s/apps/` and commit — ArgoCD will sync to target clusters.
+Push application images via CI or build and push them locally. ArgoCD syncs the Helm charts from `k8s/apps`.
 
-7) Install monitoring (Prometheus/Grafana/Loki/Tempo) using the `monitoring/` Helm charts or upstream charts documented in `docs/monitoring.md`.
+```bash
+kubectl apply -f k8s/apps/db-app.yaml
+kubectl apply -f k8s/apps/backend-app.yaml
+kubectl apply -f k8s/apps/frontend-app.yaml
+```
 
-8) Backups: Install Velero following `docs/backups.md` and configure S3 bucket for backups.
+Check status:
 
-Runbook and troubleshooting: see `docs/runbooks.md`.
+```bash
+kubectl get applications -n argocd
+kubectl get pods
+kubectl get svc
+```
 
-If you want, I can now: (a) enable GHCR push in CI workflow, (b) add ArgoCD install manifests, (c) add samples for ArgoCD Application manifests, or (d) add SealedSecrets examples. Pick one or more.
+## Operations
 
+- Secrets: install SealedSecrets or External Secrets before production use.
+- Monitoring: install Prometheus, Grafana, Loki, and Tempo as documented in `docs/monitoring.md`.
+- Backups: install Velero and configure database backups as documented in `docs/backups.md`.
+- Runbooks: see `docs/runbooks.md`.

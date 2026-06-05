@@ -110,8 +110,8 @@ resource "aws_eks_node_group" "default" {
 
   scaling_config {
     desired_size = var.node_group_desired_count
-    min_size     = 1
-    max_size     = max(1, var.node_group_desired_count)
+    min_size     = var.node_group_min_count
+    max_size     = var.node_group_max_count
   }
 
   instance_types = [var.node_group_instance_type]
@@ -137,4 +137,8 @@ output "node_group_arn" {
 
 output "vpc_id" {
   value = aws_vpc.this.id
+}
+
+output "availability_zones" {
+  value = aws_subnet.public[*].availability_zone
 }

@@ -1,0 +1,8 @@
+# Terraform backend resources are bootstrapped outside the main state.
+#
+# Use backend-bootstrap.sh to create:
+# - S3 bucket: cloudopshub-terraform-state-us-east-1
+# - DynamoDB table: cloudopshub-terraform-locks
+#
+# This file is intentionally named .tf.example so Terraform does not try to
+# manage the backend bucket/table from the same state that depends on them.
