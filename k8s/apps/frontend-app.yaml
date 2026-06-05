@@ -11,6 +11,10 @@ spec:
     repoURL: 'https://github.com/Smartflix/Deployment-of-Multi-Cluster-Infrastructure-Platform-with-Continuous-Delivery-and-Observability.git'
     targetRevision: HEAD
     path: k8s/helm/frontend
+    helm:
+      parameters:
+        - name: ingress.enabled
+          value: "true"
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: cloudopshub

@@ -6,3 +6,16 @@ image:
 service:
   type: ClusterIP
   port: 80
+ingress:
+  enabled: false
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix

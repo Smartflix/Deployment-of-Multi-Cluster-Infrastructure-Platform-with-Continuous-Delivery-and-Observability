@@ -211,6 +211,33 @@ kubectl get pods
 kubectl get svc
 ```
 
+## Expose Frontend With ALB
+
+For production EKS, expose the frontend through AWS Load Balancer Controller and an ALB-backed Ingress:
+
+```bash
+export AWS_REGION=us-east-1
+export CLUSTER_NAME=cloudopshub-prod
+chmod +x scripts/install-aws-load-balancer-controller.sh
+./scripts/install-aws-load-balancer-controller.sh
+```
+
+Commit and push the frontend Ingress changes so ArgoCD can sync them:
+
+```bash
+git add .
+git commit -m "Expose frontend with AWS ALB ingress"
+git push origin fix-push
+```
+
+Refresh the frontend app and wait for an ALB address:
+
+```bash
+kubectl apply -f k8s/apps/frontend-app.yaml
+kubectl annotate application frontend -n argocd argocd.argoproj.io/refresh=hard --overwrite
+kubectl get ingress -n cloudopshub -w
+```
+
 ## Operations
 
 - Secrets: install SealedSecrets or External Secrets before production use.
