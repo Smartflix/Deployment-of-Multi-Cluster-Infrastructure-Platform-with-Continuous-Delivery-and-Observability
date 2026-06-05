@@ -5,7 +5,8 @@ image:
 postgres:
   database: cloudopshub
   user: cloudopshub
-  password: change-me
+  existingSecret: cloudopshub-db-secret
+  passwordKey: postgres-password
 storage:
   size: 10Gi
 service:

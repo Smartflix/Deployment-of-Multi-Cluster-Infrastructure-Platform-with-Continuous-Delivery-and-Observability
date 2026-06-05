@@ -43,17 +43,26 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-Create the GHCR pull secret in each target namespace that pulls private or restricted images:
+Create the Docker Hub pull secret in each target namespace if the image repositories are private:
 
 ```bash
-kubectl create secret docker-registry ghcr-pull-secret \
-  --docker-server=ghcr.io \
-  --docker-username=<github-username> \
-  --docker-password=<github-token> \
+kubectl create secret docker-registry dockerhub-pull-secret \
+  --docker-server=docker.io \
+  --docker-username=fabulousjeff2009 \
+  --docker-password=<dockerhub-token> \
   --docker-email=<email>
 
 kubectl patch serviceaccount default \
-  -p '{"imagePullSecrets":[{"name":"ghcr-pull-secret"}]}'
+  -p '{"imagePullSecrets":[{"name":"dockerhub-pull-secret"}]}'
+```
+
+Create the demo database password Secret before syncing the db chart:
+
+```bash
+kubectl create namespace cloudopshub
+kubectl create secret generic cloudopshub-db-secret \
+  --from-literal=postgres-password=<db-password> \
+  -n cloudopshub
 ```
 
 Apply the application manifests:

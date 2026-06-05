@@ -94,6 +94,6 @@ If you already ran `docker login`, skip the login prompt:
 
 ## Important Production Notes
 
-- Do not leave `k8s/helm/db/values.yaml` with `postgres.password: change-me` in production.
+- The db chart reads `POSTGRES_PASSWORD` from the Kubernetes Secret named `cloudopshub-db-secret`.
 - Prefer immutable tags such as a Git SHA for production releases instead of `latest`.
 - If Docker Hub repositories are private, configure Kubernetes image pull secrets before ArgoCD syncs the apps.

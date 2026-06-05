@@ -17,9 +17,9 @@ The target operating model is:
 - Terraform: provisions AWS networking, EKS clusters, node groups, and environment-specific infrastructure from `infra/terraform`.
 - Environment variable files: `env.dev.tfvars`, `env.staging.tfvars`, and `env.prod.tfvars` define cluster names, sizes, and regions.
 - ArgoCD: installed on a control cluster and used to reconcile application manifests into target clusters.
-- GitHub Actions: builds frontend, backend, and db images, scans them with Trivy, and publishes versioned images to GHCR.
+- GitHub Actions: builds frontend, backend, and db images, scans them with Trivy, and publishes versioned images to Docker Hub.
 - Helm charts: package frontend, backend, and db workloads with reusable Kubernetes manifests.
-- GHCR pull secret: allows clusters to pull CloudOpsHub images from GitHub Container Registry.
+- Docker Hub pull secret: allows clusters to pull CloudOpsHub images when the repositories are private.
 - Observability: Prometheus, Grafana, Loki, and Tempo provide centralized metrics, logs, and traces.
 - Backups: Velero and database backup procedures protect Kubernetes and application state.
 
@@ -42,3 +42,5 @@ The frontend and backend Helm charts run two replicas and include topology sprea
 If the business requires resilience against an entire AWS region outage, deploy separate production clusters in separate regions and use DNS or global traffic management for failover.
 
 The bundled db chart is suitable for demos and integration testing. Production database HA should use a managed multi-AZ database such as Amazon RDS/Aurora or a production-grade Postgres operator with replication, backups, and failover.
+
+The demo db chart reads its PostgreSQL password from a Kubernetes Secret named `cloudopshub-db-secret`. Production secrets should be managed with SealedSecrets, External Secrets, or another approved secret-management workflow.

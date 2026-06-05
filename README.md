@@ -125,6 +125,18 @@ Deploy with Helm:
 .\scripts\deploy-k8s-local.ps1
 ```
 
+To choose the local Kubernetes DB password:
+
+```powershell
+.\scripts\deploy-k8s-local.ps1 -DbPassword "your-local-password"
+```
+
+If local ports `18090` or `18091` are already in use, choose different port-forward ports:
+
+```powershell
+.\scripts\deploy-k8s-local.ps1 -FrontendPort 28090 -BackendPort 28091
+```
+
 This installs the application into the `cloudopshub` namespace and port-forwards:
 
 ```text
