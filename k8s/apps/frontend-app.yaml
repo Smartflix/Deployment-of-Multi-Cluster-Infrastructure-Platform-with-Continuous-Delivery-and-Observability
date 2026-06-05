@@ -14,7 +14,7 @@ spec:
     helm:
       parameters:
         - name: image.tag
-          value: linked-v1
+          value: 759e34ddb88b085b65db1c0d06d571b34198435f
         - name: ingress.enabled
           value: "true"
   destination:
