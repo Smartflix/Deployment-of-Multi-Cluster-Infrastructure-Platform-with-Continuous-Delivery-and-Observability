@@ -6,3 +6,11 @@ image:
 service:
   type: ClusterIP
   port: 8080
+database:
+  enabled: false
+  existingSecret: cloudopshub-rds-secret
+  hostKey: DB_HOST
+  portKey: DB_PORT
+  nameKey: DB_NAME
+  userKey: DB_USER
+  passwordKey: DB_PASSWORD

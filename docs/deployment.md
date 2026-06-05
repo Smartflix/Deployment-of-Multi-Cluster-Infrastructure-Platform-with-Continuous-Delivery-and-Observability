@@ -74,7 +74,8 @@ DB_PASSWORD='<db-password>' ./scripts/create-db-secret.sh
 Apply the application manifests:
 
 ```bash
-kubectl apply -f k8s/apps/db-app.yaml
 kubectl apply -f k8s/apps/backend-app.yaml
 kubectl apply -f k8s/apps/frontend-app.yaml
 ```
+
+For production, use RDS and do not sync `k8s/apps/db-app.yaml`. The db chart is retained for local/demo testing.

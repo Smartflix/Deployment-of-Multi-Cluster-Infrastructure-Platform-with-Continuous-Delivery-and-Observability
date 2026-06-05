@@ -75,6 +75,37 @@ Configure `kubectl` for the cluster:
 aws eks update-kubeconfig --name $(terraform output -raw cluster_name) --region us-east-1
 ```
 
+For the production multi-AZ deployment, Terraform creates:
+
+```text
+EKS cluster across two availability zones
+Managed node group with 4 desired nodes
+Multi-AZ RDS PostgreSQL database
+```
+
+Production uses RDS for the database. The in-cluster `db` Helm chart is only for local/demo testing.
+
+Use the helper script to plan first:
+
+```powershell
+$env:TF_VAR_db_password = "strong-db-password"
+.\scripts\deploy-eks-prod.ps1
+```
+
+Create the AWS resources only when you are ready:
+
+```powershell
+$env:TF_VAR_db_password = "strong-db-password"
+.\scripts\deploy-eks-prod.ps1 -Apply
+```
+
+To switch an already-running prod cluster from the demo db pod to RDS:
+
+```bash
+export TF_VAR_db_password='strong-db-password'
+./scripts/switch-prod-to-rds.sh
+```
+
 ## Install ArgoCD
 
 Install the official ArgoCD manifests on the control cluster.

@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from datetime import datetime, timezone
 import json
 import os
+import socket
 
 
 CLUSTERS = [
@@ -99,8 +100,41 @@ def platform_summary():
             "environments": ["dev", "staging", "prod"],
             "activePipelines": len(PIPELINES),
             "openIncidents": sum(1 for incident in INCIDENTS if incident["status"] != "resolved"),
-            "database": "RDS PostgreSQL Multi-AZ",
+            "database": database_summary()["type"],
         },
+    }
+
+
+def database_summary():
+    host = os.environ.get("DB_HOST")
+    port = int(os.environ.get("DB_PORT", "5432"))
+    name = os.environ.get("DB_NAME", "cloudopshub")
+    user = os.environ.get("DB_USER", "cloudopshub")
+
+    if not host:
+        return {
+            "type": "Demo PostgreSQL",
+            "status": "not_configured",
+            "host": "db",
+            "port": 5432,
+            "database": name,
+            "user": user,
+        }
+
+    status = "reachable"
+    try:
+        with socket.create_connection((host, port), timeout=3):
+            pass
+    except OSError:
+        status = "unreachable"
+
+    return {
+        "type": "RDS PostgreSQL Multi-AZ",
+        "status": status,
+        "host": host,
+        "port": port,
+        "database": name,
+        "user": user,
     }
 
 
@@ -111,6 +145,7 @@ ROUTES = {
     "/api/clusters": lambda: {"clusters": CLUSTERS, "generatedAt": now_iso()},
     "/api/pipelines": lambda: {"pipelines": PIPELINES, "generatedAt": now_iso()},
     "/api/incidents": lambda: {"incidents": INCIDENTS, "generatedAt": now_iso()},
+    "/api/database": lambda: {"database": database_summary(), "generatedAt": now_iso()},
 }
 
 
