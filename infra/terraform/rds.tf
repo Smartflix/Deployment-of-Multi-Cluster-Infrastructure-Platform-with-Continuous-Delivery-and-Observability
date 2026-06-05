@@ -38,6 +38,3 @@ resource "aws_db_instance" "postgres" {
   skip_final_snapshot     = false
 }
 
-output "db_endpoint" {
-  value = aws_db_instance.postgres.address
-}
