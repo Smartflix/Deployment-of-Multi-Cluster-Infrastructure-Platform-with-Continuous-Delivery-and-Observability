@@ -27,3 +27,7 @@ variable "node_group_instance_type" {
   type    = string
   default = "t3.medium"
 }
+variable "db_password" {
+  type      = string
+  sensitive = true
+}
