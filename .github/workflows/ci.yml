@@ -67,7 +67,7 @@ jobs:
     name: Terraform CI
     runs-on: ubuntu-latest
     env:
-      TF_DATA_DIR: ${{ runner.temp }}/terraform-data
+      TF_DATA_DIR: /tmp/cloudopshub-terraform-data
     defaults:
       run:
         working-directory: infra/terraform
