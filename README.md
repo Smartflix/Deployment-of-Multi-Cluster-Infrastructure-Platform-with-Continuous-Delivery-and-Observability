@@ -243,7 +243,7 @@ Push application images via CI or build and push them locally.
 
 ## GitHub Actions CI/CD Pipeline
 
-The CI workflow runs backend Python syntax and API smoke tests, frontend nginx config validation, Terraform formatting and validation, Helm chart lint/render checks, and Docker image build checks.
+The CI workflow runs backend Python syntax and API smoke tests, frontend nginx config validation, Terraform formatting and validation, Helm chart lint/render checks, a SonarQube code scan, and Docker image build checks.
 
 After CI passes on a push, the CD workflow builds the frontend, backend, and demo db images, pushes them to Docker Hub, scans pushed images with Trivy, then updates the frontend/backend ArgoCD image tags to the Git SHA.
 
@@ -252,7 +252,11 @@ Add these GitHub repository secrets:
 ```text
 DOCKERHUB_USERNAME
 DOCKERHUB_TOKEN
+SONAR_HOST_URL
+SONAR_TOKEN
 ```
+
+`SONAR_HOST_URL` is the URL of your SonarQube server, for example `https://sonarqube.example.com`. `SONAR_TOKEN` is a SonarQube token with permission to analyze the `cloudopshub` project. If these SonarQube secrets are not configured, CI skips the SonarQube scan and continues with the rest of the checks.
 
 Enable workflow write access:
 
