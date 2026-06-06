@@ -23,18 +23,23 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_db_instance" "postgres" {
-  identifier              = "${var.cluster_name}-postgres"
-  engine                  = "postgres"
-  engine_version          = "15"
-  instance_class          = "db.t3.micro"
-  allocated_storage       = 20
-  db_name                 = "cloudopshub"
-  username                = "cloudopshub"
-  password                = var.db_password
-  multi_az                = true
-  db_subnet_group_name    = aws_db_subnet_group.cloudopshub.name
-  vpc_security_group_ids  = [aws_security_group.rds.id]
-  backup_retention_period = 7
-  skip_final_snapshot     = false
+  identifier                = "${var.cluster_name}-postgres"
+  engine                    = "postgres"
+  engine_version            = "15"
+  instance_class            = "db.t3.micro"
+  allocated_storage         = 20
+  db_name                   = "cloudopshub"
+  username                  = "cloudopshub"
+  password                  = var.db_password
+  multi_az                  = true
+  db_subnet_group_name      = aws_db_subnet_group.cloudopshub.name
+  vpc_security_group_ids    = [aws_security_group.rds.id]
+  backup_retention_period   = 7
+  skip_final_snapshot       = false
+  final_snapshot_identifier = "${var.cluster_name}-postgres-final"
+
+  lifecycle {
+    ignore_changes = [password]
+  }
 }
 

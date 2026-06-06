@@ -10,6 +10,95 @@ For the full human-readable project report, including blockers and resolutions, 
 
 Container image folders and replacement steps are documented in `docs/images.md`.
 
+## Application Tree
+
+```text
+.
+|-- .github/
+|   `-- workflows/
+|       |-- ci.yml                 # CI validation and image build checks
+|       `-- cd.yml                 # Docker Hub push, Trivy scan, GitOps tag updates
+|-- ansible/
+|   `-- playbooks/
+|       `-- site.yml               # Configuration automation entrypoint
+|-- apps/
+|   |-- backend/
+|   |   |-- app.py                 # Python HTTP API and metrics endpoint
+|   |   `-- Dockerfile
+|   |-- frontend/
+|   |   |-- index.html             # CloudOpsHub dashboard UI
+|   |   |-- nginx.conf             # Static hosting and API proxy config
+|   |   `-- Dockerfile
+|   `-- db/
+|       |-- init.sql               # Demo PostgreSQL seed data
+|       `-- Dockerfile
+|-- docs/                          # Architecture, deployment, monitoring, backup docs
+|-- infra/
+|   `-- terraform/
+|       |-- main.tf                # AWS/EKS infrastructure
+|       |-- rds.tf                 # Production RDS database
+|       |-- eks_resources.tf       # EKS supporting resources
+|       |-- env.dev.tfvars
+|       |-- env.staging.tfvars
+|       `-- env.prod.tfvars
+|-- k8s/
+|   |-- apps/                      # ArgoCD Application manifests
+|   |-- helm/                      # Helm charts for frontend, backend, and db
+|   `-- kind/                      # Local kind cluster config
+|-- monitoring/                    # Prometheus, Grafana, Loki, and alert configs
+|-- scripts/                       # Provisioning, deployment, backup, and ops scripts
+|-- docker-compose.yml             # Local app stack
+`-- README.md
+```
+
+## Project Architecture
+
+CloudOpsHub is a GitOps-based multi-cluster infrastructure platform. Terraform provisions AWS infrastructure, GitHub Actions validates and packages the application, Docker Hub stores versioned container images, and ArgoCD reconciles Kubernetes workloads from Git into the target cluster.
+
+```text
+Developer
+   |
+   | git push / pull request
+   v
+GitHub Repository
+   |
+   | CI: app checks, Terraform validate, Helm validate, Docker build check
+   v
+GitHub Actions CI
+   |
+   | successful push triggers CD
+   v
+GitHub Actions CD
+   |
+   | build and push images
+   
+Docker Hub
+   |
+   | commit updated image tags
+   v
+GitOps Manifests in k8s/apps
+   |
+   | ArgoCD watches Git
+   v
+ArgoCD Control Plane
+   |
+   | sync Helm charts from k8s/helm
+   v
+Kubernetes / EKS Clusters
+   |
+   | run frontend, backend, database integration, monitoring, logging
+   v
+CloudOpsHub Application
+```
+
+Core components:
+
+- **Application:** a static nginx frontend, a Python backend API, and a demo PostgreSQL container for local or non-production testing.
+- **Infrastructure:** Terraform creates environment-specific AWS resources, including EKS clusters and production RDS PostgreSQL.
+- **Delivery:** CI validates code and manifests; CD publishes Docker images and updates ArgoCD image tags.
+- **GitOps:** ArgoCD Applications in `k8s/apps` point to Helm charts in `k8s/helm`, keeping cluster state reproducible from Git.
+- **Operations:** monitoring, logging, alerting, backups, and restore workflows are supported through `monitoring/`, `scripts/`, and `docs/`.
+
 ## Run The Application Locally
 
 Start with the application before CI/CD:

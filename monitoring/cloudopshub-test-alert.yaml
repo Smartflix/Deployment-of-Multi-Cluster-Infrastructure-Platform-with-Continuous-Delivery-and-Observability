@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cloudopshub-test-alert
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: cloudopshub-test-alert
+spec:
+  groups:
+    - name: cloudopshub.test
+      rules:
+        - alert: CloudOpsHubTestAlert
+          expr: vector(1)
+          for: 30s
+          labels:
+            severity: warning
+          annotations:
+            summary: CloudOpsHub test alert is firing
+            description: This is a temporary alert used to validate Alertmanager routing.

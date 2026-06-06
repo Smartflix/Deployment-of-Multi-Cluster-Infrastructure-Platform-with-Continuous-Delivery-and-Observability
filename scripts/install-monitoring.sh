@@ -25,6 +25,13 @@ helm upgrade --install cloudopshub-monitoring prometheus-community/kube-promethe
 kubectl apply -f "${ROOT}/monitoring/cloudopshub-dashboard.yaml"
 kubectl apply -f "${ROOT}/monitoring/cloudopshub-alerts.yaml"
 
+if kubectl get secret cloudopshub-alert-routing -n "${NAMESPACE}" >/dev/null 2>&1; then
+  kubectl apply -f "${ROOT}/monitoring/cloudopshub-alert-routing.yaml"
+else
+  echo "Skipping alert routing because secret cloudopshub-alert-routing does not exist."
+  echo "Run scripts/configure-alert-routing.sh after creating a Slack webhook."
+fi
+
 kubectl rollout status deployment/cloudopshub-monitoring-grafana -n "${NAMESPACE}" --timeout=180s
 kubectl get pods,svc -n "${NAMESPACE}"
 

@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: cloudopshub-alert-routing
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: cloudopshub-alert-routing
+spec:
+  route:
+    groupBy:
+      - namespace
+      - alertname
+      - severity
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 4h
+    receiver: cloudopshub-slack
+    routes:
+      - receiver: cloudopshub-slack
+        matchers:
+          - name: severity
+            value: critical
+            matchType: =
+      - receiver: cloudopshub-slack
+        matchers:
+          - name: severity
+            value: warning
+            matchType: =
+  receivers:
+    - name: cloudopshub-slack
+      slackConfigs:
+        - apiURL:
+            name: cloudopshub-alert-routing
+            key: slack-webhook-url
+          sendResolved: true
+          title: '{{ .CommonLabels.alertname }}'
+          text: '{{ range .Alerts }}{{ .Annotations.summary }} - {{ .Annotations.description }}{{ "\n" }}{{ end }}'

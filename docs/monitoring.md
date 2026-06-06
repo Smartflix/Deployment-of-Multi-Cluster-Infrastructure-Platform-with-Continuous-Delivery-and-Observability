@@ -71,6 +71,31 @@ Check alert rules:
 kubectl get prometheusrule cloudopshub-alerts -n monitoring -o yaml
 ```
 
+## Alert Routing
+
+Alertmanager routing is configured with `monitoring/cloudopshub-alert-routing.yaml`. The Slack webhook URL is stored in a Kubernetes Secret and is not committed to Git.
+
+Create a Slack incoming webhook, then configure routing:
+
+```bash
+export SLACK_WEBHOOK_URL='https://hooks.slack.com/services/...'
+chmod +x scripts/configure-alert-routing.sh
+./scripts/configure-alert-routing.sh
+```
+
+Fire a temporary test alert:
+
+```bash
+chmod +x scripts/test-alert-routing.sh
+./scripts/test-alert-routing.sh
+```
+
+After the Slack notification arrives, remove the test alert:
+
+```bash
+kubectl delete -f monitoring/cloudopshub-test-alert.yaml
+```
+
 ## Logs With Loki
 
 Install Loki and Grafana Alloy for Kubernetes pod logs:
