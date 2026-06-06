@@ -6,6 +6,8 @@ This repository scaffolds Terraform, Ansible, Helm charts, CI, and monitoring fo
 
 See `docs/` for architecture and runbooks.
 
+For the full human-readable project report, including blockers and resolutions, see `docs/project-documentation.md`.
+
 Container image folders and replacement steps are documented in `docs/images.md`.
 
 ## Run The Application Locally
@@ -150,9 +152,11 @@ kubectl patch serviceaccount default \
 
 Push application images via CI or build and push them locally.
 
-## GitHub Actions Image Pipeline
+## GitHub Actions CI/CD Pipeline
 
-The CI workflow builds the frontend, backend, and demo db images, pushes them to Docker Hub, then updates the frontend/backend ArgoCD image tags to the Git SHA.
+The GitHub Actions workflow runs CI checks first: backend Python syntax and API smoke tests, frontend nginx config validation, Terraform formatting and validation, and Helm chart lint/render checks.
+
+After CI passes, the CD stage builds the frontend, backend, and demo db images, pushes them to Docker Hub, scans pushed images with Trivy, then updates the frontend/backend ArgoCD image tags to the Git SHA.
 
 Add these GitHub repository secrets:
 
@@ -169,7 +173,7 @@ Repository Settings -> Actions -> General -> Workflow permissions -> Read and wr
 
 For a local Kubernetes smoke test before ArgoCD, use a kind cluster. If Docker Desktop asks for a Kubernetes provisioner, choose `kind`.
 
-Install kind if needed:
+Install kind ;
 
 ```powershell
 choco install kind -y
