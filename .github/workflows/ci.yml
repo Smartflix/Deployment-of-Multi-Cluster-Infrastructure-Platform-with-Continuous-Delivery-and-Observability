@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   workflow_dispatch:
@@ -10,6 +10,7 @@ on:
       - k8s/**
       - monitoring/**
       - .github/workflows/ci.yml
+      - .github/workflows/cd.yml
   pull_request:
     branches: [ main, staging ]
     paths:
@@ -18,9 +19,10 @@ on:
       - k8s/**
       - monitoring/**
       - .github/workflows/ci.yml
+      - .github/workflows/cd.yml
 
 concurrency:
-  group: cloudopshub-ci-cd-${{ github.ref }}
+  group: cloudopshub-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -134,7 +136,7 @@ jobs:
           PY
 
   build-images:
-    name: Build, Scan, and Push Images
+    name: Build Images
     needs: [ app-ci, terraform-ci, helm-ci ]
     runs-on: ubuntu-latest
     env:
@@ -142,7 +144,6 @@ jobs:
       IMAGE_NAMESPACE: fabulousjeff2009
     permissions:
       contents: read
-      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -162,73 +163,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push ${{ matrix.app.name }}
+      - name: Build ${{ matrix.app.name }}
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.app.context }}
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
           platforms: linux/amd64
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.app.image }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.app.image }}:${{ github.sha }}
-
-      - name: Scan image with Trivy
-        if: github.event_name != 'pull_request'
-        uses: aquasecurity/trivy-action@v0.35.0
-        continue-on-error: true
-        with:
-          scan-type: image
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.app.image }}:${{ github.sha }}
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-
-  update-gitops-tags:
-    name: CD - Update GitOps Image Tags
-    if: github.event_name != 'pull_request'
-    needs: build-images
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update ArgoCD image tags
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          python3 - <<'PY'
-          import os
-          from pathlib import Path
-
-          image_tag = os.environ["IMAGE_TAG"]
-          files = [
-              Path("k8s/apps/backend-app.yaml"),
-              Path("k8s/apps/frontend-app.yaml"),
-          ]
-
-          for path in files:
-              lines = path.read_text().splitlines()
-              for index, line in enumerate(lines):
-                  if line.strip() == "- name: image.tag":
-                      lines[index + 1] = f"          value: {image_tag}"
-                      break
-              else:
-                  raise SystemExit(f"image.tag parameter not found in {path}")
-              path.write_text("\n".join(lines) + "\n")
-          PY
-
-      - name: Commit GitOps tag updates
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update GitOps image tags ${{ github.sha }} [skip ci]"
-          file_pattern: k8s/apps/backend-app.yaml k8s/apps/frontend-app.yaml

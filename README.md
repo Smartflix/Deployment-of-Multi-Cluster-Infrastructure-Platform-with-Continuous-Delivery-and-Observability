@@ -154,9 +154,9 @@ Push application images via CI or build and push them locally.
 
 ## GitHub Actions CI/CD Pipeline
 
-The GitHub Actions workflow runs CI checks first: backend Python syntax and API smoke tests, frontend nginx config validation, Terraform formatting and validation, and Helm chart lint/render checks.
+The CI workflow runs backend Python syntax and API smoke tests, frontend nginx config validation, Terraform formatting and validation, Helm chart lint/render checks, and Docker image build checks.
 
-After CI passes, the CD stage builds the frontend, backend, and demo db images, pushes them to Docker Hub, scans pushed images with Trivy, then updates the frontend/backend ArgoCD image tags to the Git SHA.
+After CI passes on a push, the CD workflow builds the frontend, backend, and demo db images, pushes them to Docker Hub, scans pushed images with Trivy, then updates the frontend/backend ArgoCD image tags to the Git SHA.
 
 Add these GitHub repository secrets:
 
