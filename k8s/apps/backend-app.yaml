@@ -14,7 +14,7 @@ spec:
     helm:
       parameters:
         - name: image.tag
-          value: 15c8876efcf699766348e4844bf761ab13d3a9d8
+          value: 78843ca907bd5512022024309fc8f60c357d94e0
         - name: database.enabled
           value: "true"
         - name: serviceMonitor.enabled
