@@ -14,7 +14,7 @@ spec:
     helm:
       parameters:
         - name: image.tag
-          value: 2c7c38913d48c3654cc8c26b6d29637b22ff97b0
+          value: fe68ef5198f2cdf60daf14dc7a7a4bdc74986a82
         - name: ingress.enabled
           value: "true"
         - name: ingress.tls.enabled
