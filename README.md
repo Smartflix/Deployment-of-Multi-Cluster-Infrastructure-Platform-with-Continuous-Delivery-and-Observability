@@ -264,7 +264,7 @@ Enable workflow write access:
 ```text
 Repository Settings -> Actions -> General -> Workflow permissions -> Read and write permissions
 ```
-
+![Architecture Diagram](./cloudops-images/CICD.png)
 For a local Kubernetes smoke test before ArgoCD, use a kind cluster. If Docker Desktop asks for a Kubernetes provisioner, choose `kind`.
 
 Install kind ;
@@ -303,7 +303,7 @@ This installs the application into the `cloudopshub` namespace and port-forwards
 frontend: http://localhost:18090
 backend:  http://localhost:18091/api/summary
 ```
-
+![Architecture Diagram](./cloudops-images/front-end.png)
 For GitOps deployment, ArgoCD syncs the Helm charts from `k8s/apps`.
 
 Before syncing the db chart, make sure the DB Secret exists:
@@ -319,7 +319,7 @@ kubectl apply -f k8s/apps/frontend-app.yaml
 ```
 
 Check status:
-
+![Architecture Diagram](./cloudops-images/k8s-resources.png)
 ```bash
 kubectl get applications -n argocd
 kubectl get pods
@@ -357,6 +357,9 @@ kubectl get ingress -n cloudopshub -w
 
 - Secrets: install SealedSecrets or External Secrets before production use.
 - Monitoring: install Prometheus and Grafana with `scripts/install-monitoring.sh`; see `docs/monitoring.md`.
+![Architecture Diagram](./cloudops-images/Alert-manager.png)
 - Logs: install Loki and Alloy with `scripts/install-loki.sh`; see `docs/monitoring.md`.
+![Architecture Diagram](./cloudops-images/graphana-dashboard-showing-loki.png)
 - Backups: validate RDS snapshots and Velero restores as documented in `docs/backups.md`.
 - Runbooks: see `docs/runbooks.md`.
+![Architecture Diagram](./cloudops-images/metrics-from-k8s.png)
