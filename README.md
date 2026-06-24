@@ -256,7 +256,7 @@ SONAR_HOST_URL
 SONAR_TOKEN
 ```
 
-`SONAR_HOST_URL` is the URL of your SonarQube server, for example `https://sonarqube.example.com`. `SONAR_TOKEN` is a SonarQube token with permission to analyze the `cloudopshub` project. If these SonarQube secrets are not configured, CI skips the SonarQube scan and continues with the rest of the checks.
+`SONAR_HOST_URL` is the URL of your SonarQube server, for example `https://sonarqube.example.com`. `SONAR_TOKEN` is a SonarQube token with permission to analyze the `cloudopshub` project. If these SonarQube secrets are not configured, CI skips the SonarQube scan and continues with the rest of the checks. If the SonarQube server is unavailable, the scan is allowed to fail without blocking the image build checks.
 
 Enable workflow write access:
 

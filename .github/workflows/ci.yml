@@ -166,6 +166,7 @@ jobs:
       - name: Run SonarQube scan
         if: steps.sonar-config.outputs.enabled == 'true'
         uses: SonarSource/sonarqube-scan-action@v5
+        continue-on-error: true
 
   build-images:
     name: Build Images
