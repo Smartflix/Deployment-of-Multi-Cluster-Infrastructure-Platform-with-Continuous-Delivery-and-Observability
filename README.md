@@ -240,7 +240,7 @@ kubectl patch serviceaccount default \
 ## Deploy Applications
 
 Push application images via CI or build and push them locally.
-![Architecture Diagram](./cloudops-images/ARGOCD.png)
+![Architecture Diagram](./cloudops-images/ARCOCD.png)
 
 ## GitHub Actions CI/CD Pipeline
 
